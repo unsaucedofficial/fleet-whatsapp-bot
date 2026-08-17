@@ -1,3 +1,4 @@
+//transforms the payload from Motive into a format suitable for WhatsApp alerts
 function transformMotivePayload(report) {
   const driver = report.driver
     ? `${report.driver.first_name} ${report.driver.last_name}`.trim()
