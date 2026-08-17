@@ -106,3 +106,4 @@ Accepts an inspection report payload, formats it via Groq, and sends it to
   service) for production use.
 - This uses an unofficial WhatsApp Web client library; be mindful of
   WhatsApp's terms of service when deploying.
+# fleet-whatsapp-automation
