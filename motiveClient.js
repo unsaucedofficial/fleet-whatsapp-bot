@@ -1,4 +1,3 @@
-//transforms the payload from Motive into a format suitable for WhatsApp alerts
 function transformMotivePayload(report) {
   const driver = report.driver
     ? `${report.driver.first_name} ${report.driver.last_name}`.trim()
@@ -6,7 +5,7 @@ function transformMotivePayload(report) {
 
   const defects = (report.defects || []).map(part => ({
     category: part.category,
-    notes: part.notes || (part.type ? `${part.type} defect` : '')
+    notes: part.notes || (part.type ? `${part.type} defect` : ''),
   }));
 
   return {
@@ -14,7 +13,7 @@ function transformMotivePayload(report) {
     vehicle_number: report.vehicle?.number || report.vehicle_number || 'Unknown Vehicle',
     driver_name: driver,
     inspection_type: report.inspection_type || 'inspection',
-    defects
+    defects,
   };
 }
 

@@ -1,24 +1,17 @@
 require('dotenv').config();
 const express = require('express');
 const { formatInspectionMessage } = require('./messageFormatter');
-const { getIsReady, sendToGroup, getAllGroups } = require('./whatsappClient');
 const { transformMotivePayload } = require('./motiveClient');
+const { sendDialpadSMS } = require('./dialpadClient');
 
 const app = express();
 app.use(express.json());
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', whatsapp: getIsReady() ? 'connected' : 'connecting' });
+  res.json({ status: 'ok' });
 });
 
-app.get('/groups', (req, res) => {
-  if (!getIsReady()) {
-    return res.status(503).json({ error: 'Not ready yet — wait for 🟢 in terminal' });
-  }
-  res.json(getAllGroups());
-});
-
-// Original manual webhook (keep for testing)
+// Manual test webhook
 app.post('/webhook', async (req, res) => {
   try {
     const payload = req.body;
@@ -28,7 +21,7 @@ app.post('/webhook', async (req, res) => {
     }
 
     const message = await formatInspectionMessage(payload);
-    await sendToGroup(process.env.WHATSAPP_GROUP_NAME, message);
+    await sendDialpadSMS(message);
 
     res.json({ success: true, message });
   } catch (err) {
@@ -40,10 +33,8 @@ app.post('/webhook', async (req, res) => {
 app.post('/motive-webhook', async (req, res) => {
   try {
     const report = req.body;
+    console.log('Motive webhook received for:', report.vehicle?.number || report.vehicle_number);
 
-    console.log('Motive webhook received for:', report.vehicle_number);
-
-    // Only alert if defects exist
     const defects = report.defects || [];
     if (defects.length === 0) {
       console.log('No defects — no alert sent');
@@ -52,8 +43,9 @@ app.post('/motive-webhook', async (req, res) => {
 
     const payload = transformMotivePayload(report);
     const message = await formatInspectionMessage(payload);
-    await sendToGroup(process.env.WHATSAPP_GROUP_NAME, message);
+    await sendDialpadSMS(message);
 
+    console.log('Dialpad SMS sent successfully');
     res.json({ success: true, message });
   } catch (err) {
     console.error('Webhook error:', err.message);
